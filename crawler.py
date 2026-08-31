@@ -54,11 +54,14 @@ def crawl(start_url, site_id, max_pages=30, delay=0.5):
 
             elif "text/html" in content_type:
                 soup = BeautifulSoup(resp.text, "html.parser")
-                title = soup.title.string.strip() if soup.title else url
+                title = soup.title.string.strip() if soup.title and soup.title.string else url
                 text = clean_html_text(soup)
 
                 for link in soup.find_all("a", href=True):
-                    next_url = urljoin(url, link["href"]).split("#")[0]
+                    href = link["href"]
+                    if not isinstance(href, str):
+                        continue
+                    next_url = urljoin(url, href).split("#")[0]
                     if (is_same_domain(next_url, base_domain)
                             and next_url not in visited
                             and not next_url.lower().endswith(SKIP_EXTENSIONS)):
@@ -77,3 +80,21 @@ def crawl(start_url, site_id, max_pages=30, delay=0.5):
         time.sleep(delay)
 
     return documents, out_dir
+
+def save_documents(documents, out_dir):
+    for i, doc in enumerate(documents):
+        safe_name = "".join(c if c.isalnum() else "_" for c in doc["title"])[:60]
+        filepath = os.path.join(out_dir, f"{i:03d}_{safe_name}.txt")
+        with open(filepath, "w", encoding="utf-8") as f:
+            f.write(f"SOURCE: {doc['url']}\nTITLE: {doc['title']}\n\n{doc['text']}")
+    print(f"\nSaved {len(documents)} documents to {out_dir}/")
+
+
+if __name__ == "__main__":
+    START_URL = "https://apscollegeofartsandscience.com"
+    SITE_ID = "aps-college"
+    MAX_PAGES = 10  # small number for our first test run
+
+    print(f"Starting crawl of {START_URL} (max {MAX_PAGES} pages)...\n")
+    docs, out_dir = crawl(START_URL, SITE_ID, max_pages=MAX_PAGES)
+    save_documents(docs, out_dir)
