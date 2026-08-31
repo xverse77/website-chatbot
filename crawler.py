@@ -23,3 +23,7 @@ def clean_html_text(soup):
     text = soup.get_text(separator="\n")
     return "\n".join(line.strip() for line in text.splitlines() if line.strip())
 
+def extract_pdf_text(content_bytes):
+    reader = PdfReader(io.BytesIO(content_bytes))
+    text = "\n".join(page.extract_text() or "" for page in reader.pages)
+    return text
