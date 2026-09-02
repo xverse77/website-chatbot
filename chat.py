@@ -24,3 +24,30 @@ def retrieve_chunks(question, site_id, n_results=5):
     sources = [meta["source_url"] for meta in results["metadatas"][0]]
 
     return chunks, sources
+
+def generate_answer(question, chunks, sources):
+    context = "\n\n".join(
+        f"[Source: {src}]\n{chunk}" for chunk, src in zip(chunks, sources)
+    )
+
+    prompt = f"""You are a helpful assistant answering questions about a website, using only the context provided below.
+
+Context:
+{context}
+
+Question: {question}
+
+Instructions:
+- Answer using ONLY the information in the context above.
+- If the answer isn't in the context, say you don't have that information — do not make anything up.
+- Keep your answer concise and directly relevant to the question.
+
+Answer:"""
+
+    response = ollama.chat(
+        model=CHAT_MODEL,
+        messages=[{"role": "user", "content": prompt}],
+    )
+
+    return response["message"]["content"]
+
