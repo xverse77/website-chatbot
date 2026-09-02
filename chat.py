@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 CHROMA_PATH = "./chroma_db"
 EMBED_MODEL = "nomic-embed-text"
-CHAT_MODEL = "qwen3:8b"
+CHAT_MODEL = "qwen3:4b"
 
 app = FastAPI()
 chroma_client = chromadb.PersistentClient(path=CHROMA_PATH)
@@ -53,3 +53,21 @@ Answer:"""
 
     return response["message"]["content"]
 
+class ChatRequest(BaseModel):
+    question: str
+    site_id: str
+
+
+@app.post("/api/chat")
+def chat(request: ChatRequest):
+    chunks, sources = retrieve_chunks(request.question, request.site_id)
+    answer = generate_answer(request.question, chunks, sources)
+
+    return {
+        "answer": answer,
+        "sources": list(set(sources)),
+    }
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
