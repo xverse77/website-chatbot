@@ -19,3 +19,6 @@ def chunk_text(text, chunk_size=CHUNK_SIZE, overlap=CHUNK_OVERLAP):
         start += chunk_size - overlap
     return chunks
 
+def embed_text(text):
+    response = ollama.embeddings(model=EMBED_MODEL, prompt=text)
+    return response["embedding"]
