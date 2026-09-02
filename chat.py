@@ -20,9 +20,11 @@ def retrieve_chunks(question, site_id, n_results=5):
         n_results=n_results,
     )
 
-    chunks = results["documents"][0]
-    sources = [meta["source_url"] for meta in results["metadatas"][0]]
+    documents = results["documents"] or [[]]
+    metadatas = results["metadatas"] or [[]]
 
+    chunks = documents[0]
+    sources = [meta["source_url"] for meta in metadatas[0]]
     return chunks, sources
 
 def generate_answer(question, chunks, sources):
