@@ -59,12 +59,8 @@ Instructions:
 
 Answer:"""
 
-    response = ollama.chat(
-        model=CHAT_MODEL,
-        messages=[{"role": "user", "content": prompt}],
-    )
-
-    return response["message"]["content"]
+    response = gemini_model.generate_content(prompt)
+    return response.text
 
 class ChatRequest(BaseModel):
     question: str
