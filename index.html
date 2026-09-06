@@ -68,6 +68,46 @@
       <button id="send-button">Send</button>
     </div>
   </div>
+  <script>
+    const messagesDiv = document.getElementById('messages');
+    const input = document.getElementById('question-input');
+    const button = document.getElementById('send-button');
 
+    function addMessage(text, sender) {
+      const msgDiv = document.createElement('div');
+      msgDiv.className = sender === 'user' ? 'message user-message' : 'message bot-message';
+      msgDiv.textContent = text;
+      messagesDiv.appendChild(msgDiv);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    async function sendQuestion() {
+      const question = input.value.trim();
+      if (!question) return;
+
+      addMessage(question, 'user');
+      input.value = '';
+
+      try {
+        const response = await fetch('http://localhost:8000/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question: question, site_id: 'aps-college' })
+        });
+
+        const data = await response.json();
+        addMessage(data.answer, 'bot');
+
+      } catch (error) {
+        addMessage('Something went wrong — is the backend running?', 'bot');
+        console.error(error);
+      }
+    }
+
+    button.addEventListener('click', sendQuestion);
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendQuestion();
+    });
+  </script>
 </body>
 </html>
