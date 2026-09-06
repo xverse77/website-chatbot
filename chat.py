@@ -2,12 +2,25 @@ import chromadb
 import ollama
 from fastapi import FastAPI
 from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
+import os
+from dotenv import load_dotenv
+import google.generativeai as genai
 
 CHROMA_PATH = "./chroma_db"
 EMBED_MODEL = "nomic-embed-text"
-CHAT_MODEL = "qwen3:4b"
+CHAT_MODEL = "gemini-3.6-flash" 
 
 app = FastAPI()
+load_dotenv()
+genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+gemini_model = genai.GenerativeModel(CHAT_MODEL)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 chroma_client = chromadb.PersistentClient(path=CHROMA_PATH)
 
 def retrieve_chunks(question, site_id, n_results=5):
