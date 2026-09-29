@@ -1,5 +1,4 @@
-import chromadb
-import ollama
+from pinecone import Pinecone
 from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
@@ -7,9 +6,10 @@ import os
 from dotenv import load_dotenv
 import google.generativeai as genai
 
-CHROMA_PATH = "./chroma_db"
-EMBED_MODEL = "nomic-embed-text"
-CHAT_MODEL = "gemini-3.6-flash" 
+EMBED_MODEL = "models/gemini-embedding-001"
+EMBED_DIMENSIONS = 768
+CHAT_MODEL = "gemini-3.6-flash"
+PINECONE_INDEX_NAME = "website-chatbot"
 
 app = FastAPI()
 load_dotenv()
@@ -21,23 +21,26 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-chroma_client = chromadb.PersistentClient(path=CHROMA_PATH)
+pc = Pinecone(api_key=os.environ["PINECONE_API_KEY"])
+pinecone_index = pc.Index(PINECONE_INDEX_NAME)
 
 def retrieve_chunks(question, site_id, n_results=5):
-    collection = chroma_client.get_collection(f"site_{site_id}")
+    query_embedding = genai.embed_content(
+        model=EMBED_MODEL,
+        content=question,
+        output_dimensionality=EMBED_DIMENSIONS,
+    )["embedding"]
 
-    query_embedding = ollama.embeddings(model=EMBED_MODEL, prompt=question)["embedding"]
-
-    results = collection.query(
-        query_embeddings=[query_embedding],
-        n_results=n_results,
+    results = pinecone_index.query(
+        vector=query_embedding,
+        top_k=n_results,
+        namespace=site_id,
+        include_metadata=True,
     )
 
-    documents = results["documents"] or [[]]
-    metadatas = results["metadatas"] or [[]]
+    chunks = [match["metadata"]["text"] for match in results["matches"]]
+    sources = [match["metadata"]["source_url"] for match in results["matches"]]
 
-    chunks = documents[0]
-    sources = [meta["source_url"] for meta in metadatas[0]]
     return chunks, sources
 
 def generate_answer(question, chunks, sources):
