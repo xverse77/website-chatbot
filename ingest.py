@@ -1,12 +1,19 @@
 import os
 import glob
-import chromadb
-import ollama
+from dotenv import load_dotenv
+import google.generativeai as genai
+from pinecone import Pinecone
 
-CHUNK_SIZE = 500      # characters per chunk
-CHUNK_OVERLAP = 50    # overlap between consecutive chunks
-EMBED_MODEL = "nomic-embed-text"
-CHROMA_PATH = "./chroma_db"
+CHUNK_SIZE = 500
+CHUNK_OVERLAP = 50
+EMBED_MODEL = "models/gemini-embedding-001"
+EMBED_DIMENSIONS = 768
+PINECONE_INDEX_NAME = "website-chatbot"
+
+load_dotenv()
+genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+pc = Pinecone(api_key=os.environ["PINECONE_API_KEY"])
+pinecone_index = pc.Index(PINECONE_INDEX_NAME)
 
 def chunk_text(text, chunk_size=CHUNK_SIZE, overlap=CHUNK_OVERLAP):
     chunks = []
@@ -20,22 +27,17 @@ def chunk_text(text, chunk_size=CHUNK_SIZE, overlap=CHUNK_OVERLAP):
     return chunks
 
 def embed_text(text):
-    response = ollama.embeddings(model=EMBED_MODEL, prompt=text)
-    return response["embedding"]
+    result=genai.embed_content(
+        model=EMBED_MODEL,
+        content=text,
+        output_dimensionality=EMBED_DIMENSIONS,
+    )
+    return result["embedding"]
 
 def ingest(site_id):
     data_dir = os.path.join("data", site_id)
     if not os.path.isdir(data_dir):
         raise SystemExit(f"No scraped data found at {data_dir}. Run crawler.py first.")
-
-    client = chromadb.PersistentClient(path=CHROMA_PATH)
-    collection_name = f"site_{site_id}"
-
-    try:
-        client.delete_collection(collection_name)
-    except Exception:
-        pass
-    collection = client.create_collection(collection_name)
 
     files = glob.glob(os.path.join(data_dir, "*.txt"))
     print(f"Found {len(files)} documents for site '{site_id}'")
@@ -51,20 +53,21 @@ def ingest(site_id):
         body = lines[3] if len(lines) > 3 else content
 
         chunks = chunk_text(body)
+        vectors_to_upsert = []
         for i, chunk in enumerate(chunks):
             embedding = embed_text(chunk)
-            chunk_id = f"{os.path.basename(filepath)}_{i}"
-            collection.add(
-                ids=[chunk_id],
-                embeddings=[embedding],
-                documents=[chunk],
-                metadatas=[{"source_url": source_url, "title": title}],
-            )
+            chunk_id = f"{site_id}_{os.path.basename(filepath)}_{i}"
+            vectors_to_upsert.append({
+                "id": chunk_id,
+                "values": embedding,
+                "metadata": {"text": chunk, "source_url": source_url, "title": title},
+            })
             total_chunks += 1
 
+        pinecone_index.upsert(vectors=vectors_to_upsert, namespace=site_id)
         print(f"  [OK] {title} -> {len(chunks)} chunks")
 
-    print(f"\nDone. {total_chunks} chunks embedded into collection '{collection_name}'")  
+    print(f"\nDone. {total_chunks} chunks embedded into Pinecone (namespace '{site_id}')")
 
 if __name__ == "__main__":
     SITE_ID = "aps-college"
