@@ -5,10 +5,11 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 from dotenv import load_dotenv
 import google.generativeai as genai
+import time 
 
 EMBED_MODEL = "models/gemini-embedding-001"
 EMBED_DIMENSIONS = 768
-CHAT_MODEL = "gemini-3.6-flash"
+CHAT_MODEL = "gemini-2.0-flash-lite"
 PINECONE_INDEX_NAME = "website-chatbot"
 
 app = FastAPI()
@@ -62,8 +63,15 @@ Instructions:
 
 Answer:"""
 
-    response = gemini_model.generate_content(prompt)
-    return response.text
+    for attempt in range(3):
+        try:
+            response = gemini_model.generate_content(prompt)
+            return response.text
+        except Exception as e:
+            if "429" in str(e) and attempt < 2:
+                time.sleep(5)
+                continue
+            raise
 
 class ChatRequest(BaseModel):
     question: str
