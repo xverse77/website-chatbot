@@ -9,7 +9,7 @@ import time
 
 EMBED_MODEL = "models/gemini-embedding-001"
 EMBED_DIMENSIONS = 768
-CHAT_MODEL = "gemini-2.0-flash-lite"
+CHAT_MODEL = "gemini-3.5-flash-lite"
 PINECONE_INDEX_NAME = "website-chatbot"
 
 app = FastAPI()
