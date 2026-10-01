@@ -73,13 +73,32 @@
     const input = document.getElementById('question-input');
     const button = document.getElementById('send-button');
 
-    function addMessage(text, sender) {
-      const msgDiv = document.createElement('div');
-      msgDiv.className = sender === 'user' ? 'message user-message' : 'message bot-message';
-      msgDiv.textContent = text;
-      messagesDiv.appendChild(msgDiv);
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    }
+function escapeHTML(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function formatBotText(text) {
+  let safe = escapeHTML(text);
+  safe = safe.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  safe = safe.replace(/\n/g, '<br>');
+  return safe;
+}
+
+function addMessage(text, sender) {
+  const msgDiv = document.createElement('div');
+  msgDiv.className = sender === 'user' ? 'message user-message' : 'message bot-message';
+
+  if (sender === 'user') {
+    msgDiv.textContent = text;
+  } else {
+    msgDiv.innerHTML = formatBotText(text);
+  }
+
+  messagesDiv.appendChild(msgDiv);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
 
     async function sendQuestion() {
       const question = input.value.trim();
