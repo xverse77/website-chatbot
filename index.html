@@ -89,7 +89,7 @@
       input.value = '';
 
       try {
-        const response = await fetch('http://localhost:8000/api/chat', {
+        const response = await fetch('https://website-chatbot-fsfx.onrender.com/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ question: question, site_id: 'aps-college' })
