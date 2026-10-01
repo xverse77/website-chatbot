@@ -18,7 +18,7 @@ genai.configure(api_key=os.environ["GEMINI_API_KEY"])
 gemini_model = genai.GenerativeModel(CHAT_MODEL)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://xverse77.github.io"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
