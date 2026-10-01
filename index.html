@@ -82,6 +82,7 @@ function escapeHTML(str) {
 function formatBotText(text) {
   let safe = escapeHTML(text);
   safe = safe.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  safe = safe.replace(/^\s*\*\s+/gm, '• ');
   safe = safe.replace(/\n/g, '<br>');
   return safe;
 }
