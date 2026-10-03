@@ -81,11 +81,45 @@
       background: #a9c3e0;
       cursor: not-allowed;
    }
+   #chat-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #4A90D9;
+  color: white;
+  padding: 14px 16px;
+  border-radius: 10px 10px 0 0;
+}
+#header-icon {
+  font-size: 24px;
+  background: rgba(255,255,255,0.2);
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#header-title {
+  font-weight: bold;
+  font-size: 15px;
+}
+#header-status {
+  font-size: 11px;
+  color: #D4F8D4;
+}
   </style>
 </head>
 <body>
 
   <div id="chat-container">
+    <div id="chat-header">
+      <div id="header-icon">🎓</div>
+      <div id="header-text">
+        <div id="header-title">APS College Assistant</div>
+        <div id="header-status">● Online</div>
+      </div>
+    </div>
     <div id="messages"></div>
     <div id="input-area">
       <input type="text" id="question-input" placeholder="Ask a question...">
