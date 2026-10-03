@@ -133,18 +133,21 @@
   padding-top: 8px;
   border-top: 1px solid rgba(0,0,0,0.1);
   font-size: 11px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
 }
 .sources-label {
   color: #777;
   font-weight: bold;
-  margin-bottom: 3px;
 }
 .sources a {
   color: #4A90D9;
   text-decoration: none;
-  display: block;
-  margin-top: 2px;
-  word-break: break-all;
+  background: rgba(74,144,217,0.1);
+  padding: 3px 9px;
+  border-radius: 10px;
 }
 .sources a:hover {
   text-decoration: underline;
@@ -186,6 +189,30 @@ function formatBotText(text) {
   return safe;
 }
 
+function formatSourceLabel(url) {
+  try {
+    const parsed = new URL(url);
+    let path = parsed.pathname.split('/').pop() || parsed.hostname;
+
+    path = path.replace(/\.(php|html?|pdf)$/i, '');
+    path = path.replace(/[-_]/g, ' ').trim();
+
+    if (!path || path === 'index') {
+      path = 'Home Page';
+    }
+
+    path = path.replace(/\b\w/g, (c) => c.toUpperCase());
+
+    if (url.toLowerCase().endsWith('.pdf')) {
+      path += ' (PDF)';
+    }
+
+    return path;
+  } catch {
+    return url;
+  }
+}
+
 function addMessage(text, sender, sources = []) {
   const msgDiv = document.createElement('div');
   msgDiv.className = sender === 'user' ? 'message user-message' : 'message bot-message';
@@ -209,7 +236,7 @@ function addMessage(text, sender, sources = []) {
         link.href = url;
         link.target = '_blank';
         link.rel = 'noopener noreferrer';
-        link.textContent = url;
+        link.textContent = formatSourceLabel(url);
         sourcesDiv.appendChild(link);
       });
 
