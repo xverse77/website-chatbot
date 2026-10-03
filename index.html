@@ -81,7 +81,7 @@
       background: #a9c3e0;
       cursor: not-allowed;
    }
-   #chat-header {
+#chat-header {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -107,6 +107,26 @@
 #header-status {
   font-size: 11px;
   color: #D4F8D4;
+}
+.suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px 14px 14px;
+}
+.suggestion-chip {
+  background: white;
+  border: 1.5px solid #4A90D9;
+  color: #4A90D9;
+  padding: 7px 14px;
+  border-radius: 16px;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.suggestion-chip:hover {
+  background: #4A90D9;
+  color: white;
 }
   </style>
 </head>
@@ -159,7 +179,7 @@ function addMessage(text, sender) {
   messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }
 
-    function showTyping() {
+function showTyping() {
   const typingDiv = document.createElement('div');
   typingDiv.className = 'message bot-message typing-indicator';
   typingDiv.id = 'typing-indicator';
@@ -205,6 +225,35 @@ async function sendQuestion() {
     input.focus();
   }
 }
+
+function showWelcome() {
+  const welcomeText = "Hi! I'm the APS College Assistant. Ask me anything about courses, admissions, fees, or placements.";
+  addMessage(welcomeText, 'bot');
+
+  const suggestions = [
+    "What courses does the college offer?",
+    "What is the fee structure?",
+    "Tell me about placements",
+  ];
+
+  const suggestionsDiv = document.createElement('div');
+  suggestionsDiv.className = 'suggestions';
+
+  suggestions.forEach((q) => {
+    const chip = document.createElement('button');
+    chip.className = 'suggestion-chip';
+    chip.textContent = q;
+    chip.addEventListener('click', () => {
+      input.value = q;
+      sendQuestion();
+    });
+    suggestionsDiv.appendChild(chip);
+  });
+
+  messagesDiv.appendChild(suggestionsDiv);
+}
+
+showWelcome();
 
     button.addEventListener('click', sendQuestion);
     input.addEventListener('keypress', (e) => {
