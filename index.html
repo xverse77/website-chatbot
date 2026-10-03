@@ -128,6 +128,27 @@
   background: #4A90D9;
   color: white;
 }
+.sources {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(0,0,0,0.1);
+  font-size: 11px;
+}
+.sources-label {
+  color: #777;
+  font-weight: bold;
+  margin-bottom: 3px;
+}
+.sources a {
+  color: #4A90D9;
+  text-decoration: none;
+  display: block;
+  margin-top: 2px;
+  word-break: break-all;
+}
+.sources a:hover {
+  text-decoration: underline;
+}
   </style>
 </head>
 <body>
@@ -165,7 +186,7 @@ function formatBotText(text) {
   return safe;
 }
 
-function addMessage(text, sender) {
+function addMessage(text, sender, sources = []) {
   const msgDiv = document.createElement('div');
   msgDiv.className = sender === 'user' ? 'message user-message' : 'message bot-message';
 
@@ -173,12 +194,33 @@ function addMessage(text, sender) {
     msgDiv.textContent = text;
   } else {
     msgDiv.innerHTML = formatBotText(text);
+
+    if (sources.length > 0) {
+      const sourcesDiv = document.createElement('div');
+      sourcesDiv.className = 'sources';
+
+      const label = document.createElement('div');
+      label.className = 'sources-label';
+      label.textContent = 'Sources:';
+      sourcesDiv.appendChild(label);
+
+      sources.forEach((url) => {
+        const link = document.createElement('a');
+        link.href = url;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.textContent = url;
+        sourcesDiv.appendChild(link);
+      });
+
+      msgDiv.appendChild(sourcesDiv);
+    }
   }
 
   messagesDiv.appendChild(msgDiv);
   messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }
-
+  
 function showTyping() {
   const typingDiv = document.createElement('div');
   typingDiv.className = 'message bot-message typing-indicator';
@@ -213,7 +255,7 @@ async function sendQuestion() {
 
     const data = await response.json();
     hideTyping();
-    addMessage(data.answer, 'bot');
+    addMessage(data.answer, 'bot', data.sources || []);
 
   } catch (error) {
     hideTyping();
