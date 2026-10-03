@@ -164,9 +164,13 @@
     box-shadow: none;
   }
   .message {
-    max-width: 88%;
-    animation: message-in 0.2s ease-out;
-  }
+  margin-bottom: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  max-width: 88%;
+  line-height: 1.4;
+  animation: message-in 0.2s ease-out;
+}
   @keyframes message-in {
     from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: translateY(0); }
@@ -183,7 +187,6 @@
   text-align: left;
 }
   #clear-button {
-  margin-left: auto;
   background: rgba(255,255,255,0.15);
   border: none;
   color: white;
@@ -196,6 +199,17 @@
 #clear-button:hover {
   background: rgba(255,255,255,0.3);
 }
+#clear-wrapper {
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+#clear-label {
+  font-size: 9px;
+  color: rgba(255,255,255,0.85);
+}
   </style>
 </head>
 <body>
@@ -207,7 +221,10 @@
         <div id="header-title">APS College Assistant</div>
         <div id="header-status">● Online</div>
       </div>
-      <button id="clear-button" title="Clear conversation">🗑️</button>
+      <div id="clear-wrapper">
+  <button id="clear-button" title="Clear conversation">🗑️</button>
+  <div id="clear-label">Clear</div>
+</div>
     </div>
     <div id="messages"></div>
     <div id="input-area">
@@ -301,7 +318,7 @@ function addMessage(text, sender, sources = []) {
   msgDiv.appendChild(timeDiv);
 
   messagesDiv.appendChild(msgDiv);
-  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  messagesDiv.scrollTo({ top: messagesDiv.scrollHeight, behavior: 'smooth' });
 }
   
 function showTyping() {
@@ -310,7 +327,7 @@ function showTyping() {
   typingDiv.id = 'typing-indicator';
   typingDiv.innerHTML = '<span></span><span></span><span></span>';
   messagesDiv.appendChild(typingDiv);
-  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  messagesDiv.scrollTo({ top: messagesDiv.scrollHeight, behavior: 'smooth' });
 }
 
 function hideTyping() {
