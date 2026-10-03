@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Website Chatbot</title>
   <style>
     body {
@@ -151,6 +152,20 @@
 }
 .sources a:hover {
   text-decoration: underline;
+}
+@media (max-width: 600px) {
+  body {
+    margin: 0;
+    max-width: 100%;
+  }
+  #chat-container {
+    height: 100vh;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .message {
+    max-width: 88%;
+  }
 }
   </style>
 </head>
